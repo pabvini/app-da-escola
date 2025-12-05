@@ -1,4 +1,3 @@
-// App.js
 import React, { useEffect, useState, useRef } from 'react';
 import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Switch, Image } from 'react-native';
 import * as Location from 'expo-location';
@@ -6,10 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-// CONFIGURAÇÕES DA ESCOLA
 const SCHOOL_CONFIG = {
   name: 'ETEMB',   
-  latitude: -1.436270,   // Coordenadas reais calculadas
+  latitude: -1.436270,   
   longitude: -48.459680,
   geofenceRadiusMeters: 200,
 };
@@ -41,7 +39,6 @@ function distanceInMeters(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// COMPONENTE DE CABEÇALHO COM LOGO
 function HeaderLogo() {
   return (
     <View style={{ alignItems:'center', marginBottom:12 }}>
