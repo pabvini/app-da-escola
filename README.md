@@ -43,7 +43,7 @@ Abra no celular com Expo Go ou emulador.
 
 ## Equipe e contribuições
 
-- **Pablo Vinicius (Pab Vini)** — *Líder do projeto e desenvolvedor principal*: integracao com geolocalização, lógica de check-in e testes finais.
+- **Pablo Vinicius** — *Líder do projeto e desenvolvedor principal*: integracao com geolocalização, lógica de check-in e testes finais.
 
 - **Murilo Chaves** — *Design & UI*: definiu paleta de cores, estilos do app e organização das telas.
 
