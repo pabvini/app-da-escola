@@ -5,6 +5,12 @@ Aplicativo protótipo para escola que apresenta informações sobre cursos, poss
 
 ---
 
+## Link do apk
+
+https://expo.dev/artifacts/eas/dq1UriPKvbU9aQAaNvcdyE.apk
+
+---
+
 ## Como rodar (desenvolvimento)
 
 1. Instale Node.js e Git.
@@ -38,40 +44,15 @@ Abra no celular com Expo Go ou emulador.
 ## Equipe e contribuições
 
 - **Pablo Vinicius (Pab Vini)** — *Líder do projeto e desenvolvedor principal*: integracao com geolocalização, lógica de check-in e testes finais.
+
 - **Murilo Chaves** — *Design & UI*: definiu paleta de cores, estilos do app e organização das telas.
+
 - **Samuel Alencar** — *Frontend & navegação*: implementou navegação entre telas e componentes reutilizáveis.
+
 - **Antônio Marcos** — *Documentação & README*: escreveu instruções de execução, testes e orientou a geração do APK.
+
 - **José Guilherme** — *Qualidade & testes*: testou o app em dispositivos físicos, reportou bugs e validou fluxo de presença.
 
-> Observação: essas atribuições foram distribuídas para fins acadêmicos.
-
----
-
-## Como gerar o APK (EAS Build - recomendado)
-
-1. Instale a CLI EAS:
-
-npm install -g eas-cli
-
-2. Faça login no Expo:
-
-eas login
-
-3. Inicialize EAS no projeto (siga as instruções):
-
-eas build:configure
-
-4. Gerar o APK (profile `development` ou `preview`):
-
-eas build -p android --profile preview
-
-- Ao final, acesse o link fornecido para baixar o APK.
-
-Se preferir usar Android Studio, rode:
-
-expo prebuild
-
-e então abra a pasta `android` no Android Studio → Build → Build APK(s).
 
 ---
 
