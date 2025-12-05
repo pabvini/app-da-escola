@@ -1,7 +1,7 @@
 # App da Escola — Projeto
 
 **Descrição:**  
-Aplicativo protótipo para escola que apresenta informações sobre cursos, possui login local para alunos, sistema de ponto (presença) com checagem por geolocalização e painel administrativo para a secretaria.
+Aplicativo protótipo para escola que apresenta informações sobre cursos, possui login local para alunos, sistema de ponto (presença) e painel administrativo para a secretaria.
 
 ---
 
