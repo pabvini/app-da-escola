@@ -1,17 +1,16 @@
 // App.js
 import React, { useEffect, useState, useRef } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Switch } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList, Switch, Image } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-// CONFIGURAÇÕES DO APP (edite conforme necessário)
+// CONFIGURAÇÕES DA ESCOLA
 const SCHOOL_CONFIG = {
-  name: 'Escola Exemplo',
-  // coloque as coordenadas reais da sua escola aqui
-  latitude: -1.4558,
-  longitude: -48.5044,
+  name: 'ETEMB',   
+  latitude: -1.436270,   // Coordenadas reais calculadas
+  longitude: -48.459680,
   geofenceRadiusMeters: 200,
 };
 
@@ -39,24 +38,39 @@ function distanceInMeters(lat1, lon1, lat2, lon2) {
             Math.cos(φ1) * Math.cos(φ2) *
             Math.sin(Δλ/2) * Math.sin(Δλ/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  const d = R * c;
-  return d;
+  return R * c;
 }
 
-// Home
+// COMPONENTE DE CABEÇALHO COM LOGO
+function HeaderLogo() {
+  return (
+    <View style={{ alignItems:'center', marginBottom:12 }}>
+      <Image source={require('./logo-etemb.png')} style={{ width:90, height:90, marginBottom:6 }} resizeMode="contain"/>
+    </View>
+  );
+}
+
+// HOME
 function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
+      <HeaderLogo />
       <Text style={styles.title}>{SCHOOL_CONFIG.name}</Text>
       <Text style={styles.subtitle}>App da Escola — Informações e Presença</Text>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Cursos Disponíveis</Text>
-        <Text style={styles.cardText}>• Administração</Text>
+        <Text style={styles.cardText}>• Eletrotécnica</Text>
+        <Text style={styles.cardText}>• Eletrônica</Text>
+        <Text style={styles.cardText}>• Edificações</Text>
         <Text style={styles.cardText}>• Informática</Text>
         <Text style={styles.cardText}>• Mecânica</Text>
-        <Text style={styles.cardText}>• Edificações</Text>
+        <Text style={styles.cardText}>• Segurança do Trabalho</Text>
       </View>
+
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Cursos')}>
+        <Text style={styles.buttonText}>Ver Cursos</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
         <Text style={styles.buttonText}>Entrar / Login</Text>
@@ -69,31 +83,64 @@ function HomeScreen({ navigation }) {
   );
 }
 
-function AboutScreen() {
+// TELA DE CURSOS
+function CursosScreen() {
+  const cursos = [
+    { nome: "Eletrotécnica", desc: "Curso técnico voltado para sistemas elétricos, instalações e manutenção." },
+    { nome: "Eletrônica", desc: "Aborda circuitos, componentes, sistemas embarcados e automação." },
+    { nome: "Edificações", desc: "Focado em construção civil, projetos, obras e medições." },
+    { nome: "Informática", desc: "Fundamentos de TI, programação, redes, manutenção e sistemas." },
+    { nome: "Mecânica", desc: "Estudo de máquinas, motores, sistemas mecânicos e manutenção." },
+    { nome: "Segurança do Trabalho", desc: "Voltado à prevenção de riscos, normas e proteção ao trabalhador." },
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Sobre o App</Text>
-      <View style={styles.card}>
-        <Text style={styles.cardText}>Este app é um protótipo para controlar presença de alunos e divulgar informações sobre cursos. Ele usa armazenamento local (AsyncStorage) e geolocalização (Expo Location) para marcar presença quando o aluno estiver nas proximidades da escola.</Text>
+      <HeaderLogo />
+      <Text style={styles.title}>Cursos da ETEMB</Text>
+
+      <View style={[styles.card, { width:'100%' }]}>
+        <FlatList
+          data={cursos}
+          keyExtractor={(item, i) => String(i)}
+          renderItem={({item}) => (
+            <View style={{ marginBottom:14 }}>
+              <Text style={{ fontWeight:'700', fontSize:16 }}>{item.nome}</Text>
+              <Text style={{ color:'#444', marginTop:4 }}>{item.desc}</Text>
+            </View>
+          )}
+        />
       </View>
     </SafeAreaView>
   );
 }
 
-// Login
+// ABOUT
+function AboutScreen() {
+  return (
+    <SafeAreaView style={styles.container}>
+      <HeaderLogo />
+      <Text style={styles.title}>Sobre o App</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardText}>
+          Este app foi criado para auxiliar alunos e secretaria da ETEMB na marcação
+          de presença por geolocalização, além de disponibilizar informações dos cursos.
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+// LOGIN
 function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
     (async () => {
-      try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-        if (!raw) {
-          await AsyncStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
-        }
-      } catch (e) {
-        console.log('seed error', e);
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
+      if (!raw) {
+        await AsyncStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
       }
     })();
   }, []);
@@ -102,72 +149,59 @@ function LoginScreen({ navigation }) {
     const raw = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
     const users = raw ? JSON.parse(raw) : [];
     const user = users.find(u => u.username === username && u.password === password);
-    if (!user) {
-      Alert.alert('Erro', 'Usuário ou senha incorretos');
-      return;
-    }
-    if (user.role === 'admin') {
-      navigation.replace('Admin', { user });
-    } else {
-      navigation.replace('Student', { user });
-    }
+    if (!user) return Alert.alert("Erro", "Usuário ou senha incorretos");
+
+    user.role === 'admin'
+      ? navigation.replace('Admin', { user })
+      : navigation.replace('Student', { user });
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <HeaderLogo />
       <Text style={styles.title}>Login</Text>
-      <TextInput placeholder="Usuário" value={username} onChangeText={setUsername} style={styles.input} autoCapitalize="none" />
-      <TextInput placeholder="Senha" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
+
+      <TextInput style={styles.input} placeholder="Usuário" autoCapitalize="none" value={username} onChangeText={setUsername}/>
+      <TextInput style={styles.input} placeholder="Senha" secureTextEntry value={password} onChangeText={setPassword}/>
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={[styles.button, styles.outline]} onPress={() => Alert.alert('Conta de teste', 'Use aluno1/1234 ou secretaria/admin123')}>
-        <Text style={[styles.buttonText, styles.outlineText]}>Ajuda</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-// Student screen
+// STUDENT
 function StudentScreen({ route }) {
   const { user } = route.params;
-  const [location, setLocation] = useState(null);
-  const [permissionGranted, setPermissionGranted] = useState(false);
   const [attendances, setAttendances] = useState([]);
+  const [permissionGranted, setPermissionGranted] = useState(false);
   const [autoCheckIn, setAutoCheckIn] = useState(false);
   const intervalRef = useRef(null);
 
   useEffect(() => {
     (async () => {
-      const status = await Location.requestForegroundPermissionsAsync();
-      if (status.status !== 'granted') {
-        Alert.alert('Permissão negada', 'Permissão de localização é necessária para marcar presença.');
-        return;
-      }
+      const p = await Location.requestForegroundPermissionsAsync();
+      if (p.status !== 'granted') return;
       setPermissionGranted(true);
     })();
 
     (async () => {
       const raw = await AsyncStorage.getItem(STORAGE_KEYS.ATTENDANCE);
       const list = raw ? JSON.parse(raw) : [];
-      const my = list.filter(a => a.username === user.username);
-      setAttendances(my.reverse());
+      setAttendances(list.filter(a => a.username === user.username).reverse());
     })();
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    return () => intervalRef.current && clearInterval(intervalRef.current);
   }, []);
 
   const getLocation = async () => {
     try {
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
-      setLocation(loc.coords);
-      return loc.coords;
-    } catch (e) {
-      Alert.alert('Erro', 'Não foi possível obter localização: ' + e.message);
+      return (await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Highest
+      })).coords;
+    } catch {
+      Alert.alert('Erro', 'Não foi possível obter localização.');
       return null;
     }
   };
@@ -182,142 +216,127 @@ function StudentScreen({ route }) {
       longitude: coords.longitude,
       method,
     };
+
     const raw = await AsyncStorage.getItem(STORAGE_KEYS.ATTENDANCE);
     const list = raw ? JSON.parse(raw) : [];
     list.push(record);
     await AsyncStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(list));
+
     setAttendances(prev => [record, ...prev]);
-    Alert.alert('Presença registrada', `Presença confirmada (${method}) em ${d.toLocaleString()}`);
+    Alert.alert("Presença registrada", `(${method}) em ${d.toLocaleString()}`);
   };
 
   const handleCheckIn = async () => {
-    if (!permissionGranted) {
-      Alert.alert('Permissão', 'Permita localização e tente novamente.');
-      return;
-    }
+    if (!permissionGranted) return Alert.alert("Permissão", "Ative a localização.");
+
     const coords = await getLocation();
     if (!coords) return;
+
     const dist = distanceInMeters(coords.latitude, coords.longitude, SCHOOL_CONFIG.latitude, SCHOOL_CONFIG.longitude);
+
     if (dist <= SCHOOL_CONFIG.geofenceRadiusMeters) {
-      await markAttendance(coords, 'geofence');
-    } else {
-      Alert.alert('Fora da escola', `Você está a ${Math.round(dist)} m da escola. Movimente-se para dentro do raio de ${SCHOOL_CONFIG.geofenceRadiusMeters} m ou registre manualmente.`,
-        [ { text: 'Registrar manualmente', onPress: () => markAttendance(coords, 'manual') }, { text: 'Ok' } ]);
+      return markAttendance(coords, 'geofence');
     }
-  };
 
-  const startAutoCheck = () => {
-    if (!permissionGranted) {
-      Alert.alert('Permissão', 'Permita localização e tente novamente.');
-      setAutoCheckIn(false);
-      return;
-    }
-    setAutoCheckIn(true);
-    intervalRef.current = setInterval(async () => {
-      const coords = await getLocation();
-      if (!coords) return;
-      const dist = distanceInMeters(coords.latitude, coords.longitude, SCHOOL_CONFIG.latitude, SCHOOL_CONFIG.longitude);
-      if (dist <= SCHOOL_CONFIG.geofenceRadiusMeters) {
-        const raw = await AsyncStorage.getItem(STORAGE_KEYS.ATTENDANCE);
-        const list = raw ? JSON.parse(raw) : [];
-        const last = list.filter(l => l.username === user.username).slice(-1)[0];
-        const now = Date.now();
-        if (!last || (now - new Date(last.timestamp).getTime()) > (30*60*1000)) {
-          await markAttendance(coords, 'auto');
-        }
-      }
-    }, 30 * 1000);
-  };
-
-  const stopAutoCheck = () => {
-    setAutoCheckIn(false);
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    Alert.alert(
+      "Fora da escola",
+      `Você está a ${Math.round(dist)} m. Deseja registrar manualmente?`,
+      [
+        { text: "Sim", onPress: () => markAttendance(coords, 'manual') },
+        { text: "Cancelar" }
+      ]
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <HeaderLogo />
       <Text style={styles.title}>Bem-vindo, {user.name}</Text>
       <Text style={styles.subtitle}>Escola: {SCHOOL_CONFIG.name}</Text>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Checar Presença</Text>
         <TouchableOpacity style={styles.button} onPress={handleCheckIn}>
-          <Text style={styles.buttonText}>Registrar Presença (Checar Localização)</Text>
+          <Text style={styles.buttonText}>Registrar Presença</Text>
         </TouchableOpacity>
-        <View style={{flexDirection:'row', alignItems:'center', marginTop:8}}>
-          <Text style={{marginRight:8}}>Auto-presença</Text>
-          <Switch value={autoCheckIn} onValueChange={v => v ? startAutoCheck() : stopAutoCheck()} />
-        </View>
-        <Text style={{marginTop:8, fontSize:12}}>Local permitido: {SCHOOL_CONFIG.geofenceRadiusMeters} m</Text>
       </View>
 
-      <View style={[styles.card, {flex:1}]}>
-        <Text style={styles.cardTitle}>Histórico de Presenças</Text>
-        {attendances.length === 0 ? <Text style={styles.cardText}>Nenhuma presença registrada.</Text> : (
-          <FlatList data={attendances} keyExtractor={(_,i)=>String(i)} renderItem={({item})=> (
-            <View style={{paddingVertical:6}}>
-              <Text style={{fontWeight:'600'}}>{item.name} — {new Date(item.timestamp).toLocaleString()}</Text>
-              <Text style={{fontSize:12}}>Método: {item.method} • Lat: {item.latitude.toFixed(4)} • Lon: {item.longitude.toFixed(4)}</Text>
+      <View style={[styles.card, { flex:1 }]}>
+        <Text style={styles.cardTitle}>Histórico</Text>
+
+        <FlatList
+          data={attendances}
+          keyExtractor={(item, i) => String(i)}
+          renderItem={({item}) => (
+            <View style={{ marginBottom:8 }}>
+              <Text style={{ fontWeight:'700' }}>
+                {item.name} — {new Date(item.timestamp).toLocaleString()}
+              </Text>
+              <Text style={{ fontSize:12 }}>
+                Método: {item.method}
+                {"\n"}Lat: {item.latitude.toFixed(4)} | Lon: {item.longitude.toFixed(4)}
+              </Text>
             </View>
-          )} />
-        )}
+          )}
+        />
       </View>
     </SafeAreaView>
   );
 }
 
-// Admin screen
-function AdminScreen({ navigation }) {
+// ADMIN
+function AdminScreen() {
   const [attendance, setAttendance] = useState([]);
 
   useEffect(() => {
     const load = async () => {
       const raw = await AsyncStorage.getItem(STORAGE_KEYS.ATTENDANCE);
-      const list = raw ? JSON.parse(raw) : [];
-      setAttendance(list.reverse());
+      setAttendance(raw ? JSON.parse(raw).reverse() : []);
     };
     load();
-    const focusListener = navigation.addListener && navigation.addListener('focus', load);
-    return () => focusListener && focusListener();
-  }, [navigation]);
-
-  const clearAll = async () => {
-    Alert.alert('Confirmar', 'Apagar todos os registros de presença?', [
-      { text: 'Cancelar' },
-      { text: 'Apagar', style: 'destructive', onPress: async () => { await AsyncStorage.removeItem(STORAGE_KEYS.ATTENDANCE); setAttendance([]); } }
-    ]);
-  };
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
+      <HeaderLogo />
       <Text style={styles.title}>Painel da Secretaria</Text>
-      <Text style={styles.subtitle}>Presenças registradas ({attendance.length})</Text>
-      <View style={{flex:1, width:'100%', marginTop:12}}>
-        <FlatList data={attendance} keyExtractor={(_,i)=>String(i)} renderItem={({item})=> (
-          <View style={{padding:10, borderBottomWidth:1, borderBottomColor:'#eee'}}>
-            <Text style={{fontWeight:'700'}}>{item.name} — {new Date(item.timestamp).toLocaleString()}</Text>
-            <Text style={{fontSize:12}}>Usuário: {item.username} • Método: {item.method}</Text>
-            <Text style={{fontSize:12}}>Lat: {item.latitude.toFixed(4)} • Lon: {item.longitude.toFixed(4)}</Text>
-          </View>
-        )} />
-      </View>
 
-      <TouchableOpacity style={[styles.button, {backgroundColor:'#c0392b', marginTop:12}]} onPress={clearAll}>
-        <Text style={styles.buttonText}>Apagar todos os registros</Text>
-      </TouchableOpacity>
+      <View style={{ flex:1, width:'100%' }}>
+        <FlatList
+          data={attendance}
+          keyExtractor={(item, i) => String(i)}
+          renderItem={({item}) => (
+            <View style={{ padding:10, borderBottomWidth:1, borderColor:'#ddd' }}>
+              <Text style={{ fontWeight:'700' }}>
+                {item.name} — {new Date(item.timestamp).toLocaleString()}
+              </Text>
+              <Text style={{ fontSize:12 }}>
+                Usuário: {item.username} • Método: {item.method}
+              </Text>
+              <Text style={{ fontSize:12 }}>
+                Lat: {item.latitude.toFixed(4)} • Lon: {item.longitude.toFixed(4)}
+              </Text>
+            </View>
+          )}
+        />
+      </View>
     </SafeAreaView>
   );
 }
 
+// APP
 export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="About" component={AboutScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Student" component={StudentScreen} options={{ headerLeft: null }} />
-        <Stack.Screen name="Admin" component={AdminScreen} />
+
+        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown:false }} />
+        <Stack.Screen name="Cursos" component={CursosScreen} options={{ headerShown:false }} />
+        <Stack.Screen name="About" component={AboutScreen} options={{ headerShown:false }} />
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown:false }} />
+        <Stack.Screen name="Student" component={StudentScreen} options={{ headerShown:false }} />
+        <Stack.Screen name="Admin" component={AdminScreen} options={{ headerShown:false }} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -325,14 +344,12 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: { flex:1, alignItems:'center', padding:16, backgroundColor:'#f9fbfd' },
-  title: { fontSize:22, fontWeight:'700', marginVertical:12 },
-  subtitle: { fontSize:14, color:'#333', marginBottom:12 },
-  input: { width:'100%', padding:12, borderWidth:1, borderColor:'#ddd', borderRadius:8, marginBottom:10, backgroundColor:'#fff' },
-  button: { backgroundColor:'#2a9df4', padding:12, borderRadius:8, width:'100%', alignItems:'center', marginTop:8 },
+  title: { fontSize:22, fontWeight:'700', marginBottom:6 },
+  subtitle: { fontSize:14, color:'#444', marginBottom:12 },
+  input: { width:'100%', padding:12, borderWidth:1, borderColor:'#ccc', borderRadius:8, marginTop:8, backgroundColor:'#fff' },
+  button: { backgroundColor:'#2a9df4', padding:12, borderRadius:8, width:'100%', alignItems:'center', marginTop:10 },
   buttonText: { color:'#fff', fontWeight:'700' },
-  outline: { backgroundColor:'#fff', borderWidth:1, borderColor:'#2a9df4' },
+  outline: { backgroundColor:'#fff', borderWidth:1, borderColor:'#2a9df4', marginTop:10 },
   outlineText: { color:'#2a9df4' },
-  card: { width:'100%', backgroundColor:'#fff', padding:12, borderRadius:8, marginBottom:12, shadowColor:'#000', shadowOpacity:0.03, elevation:2 },
-  cardTitle: { fontWeight:'700', marginBottom:6 },
-  cardText: { color:'#333' }
+  card: { width:'100%', backgroundColor:'#fff', padding:14, borderRadius:8, marginBottom:12, elevation:2 }
 });

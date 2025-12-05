@@ -7,7 +7,7 @@ Aplicativo protótipo para escola que apresenta informações sobre cursos, poss
 
 ## Link do apk
 
-https://expo.dev/artifacts/eas/dq1UriPKvbU9aQAaNvcdyE.apk
+https://expo.dev/artifacts/eas/6vEWUHy3RDphhCJUATqsXY.apk
 
 ---
 
